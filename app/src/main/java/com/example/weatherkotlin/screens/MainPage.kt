@@ -9,13 +9,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -26,7 +24,6 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -38,7 +35,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.weatherkotlin.R
+import com.example.weatherkotlin.data.Weather
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 
 //@Preview(showBackground = true)
@@ -83,7 +88,8 @@ fun MainPage() {
             Text(
                 text = "20℃",
                 modifier = Modifier
-                    .padding(bottom = 8.dp).fillMaxWidth(),
+                    .padding(bottom = 8.dp)
+                    .fillMaxWidth(),
                 textAlign = TextAlign.Center,
                 fontSize = 40.sp,
                 fontWeight = FontWeight.Bold, color = Color.White
@@ -164,9 +170,48 @@ fun TabLayout() {
             modifier = Modifier.weight(1.0f)
         ) { index ->
             LazyColumn(modifier = Modifier.fillMaxSize()) {
-                items(15) {
-                    ListItem()
-                }
+               itemsIndexed(
+                   listOf(
+                       Weather(
+                           LocalDateTime.ofEpochSecond(1698516000, 0, ZoneOffset.UTC),
+                           1.04,
+                           1.04,
+                           1.04,
+                           "Иваново",
+                           "небольшой дождь",
+                           "10n"
+                           ),
+                       Weather(
+                           LocalDateTime.ofEpochSecond(1698516000, 0, ZoneOffset.UTC),
+                           1.04,
+                           1.04,
+                           1.04,
+                           "Иваново",
+                           "небольшой дождь",
+                           "10n"
+                       ),
+                       Weather(
+                           LocalDateTime.ofEpochSecond(1698516000, 0, ZoneOffset.UTC),
+                           1.04,
+                           1.04,
+                           1.04,
+                           "Иваново",
+                           "небольшой дождь",
+                           "10n"
+                       ),
+                       Weather(
+                           LocalDateTime.ofEpochSecond(1698516000, 0, ZoneOffset.UTC),
+                           1.04,
+                           1.04,
+                           1.04,
+                           "Иваново",
+                           "небольшой дождь",
+                           "10n"
+                       ),
+
+                   )){
+                       index, item -> ListItem(item)
+                   }
             }
         }
     }

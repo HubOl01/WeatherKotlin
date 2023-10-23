@@ -102,9 +102,9 @@ private fun getWeather(lat: Double, lon: Double, state: MutableState<String>, co
     val queue = Volley.newRequestQueue(context)
     val stringRequest = StringRequest(com.android.volley.Request.Method.GET, url,
         { response ->
-            val obj = Json.decodeFromString<WeatherModel>(response)
-            nameCity = obj.city.name.toString()
-            state.value = obj.list.first().weather.first().description
+//            val obj = Json.decodeFromString<WeatherModel>(response)
+//            nameCity = obj.city.name.toString()
+//            state.value = obj.list.first().weather.first().description
 //            val obj = JSONObject(response)
 //            state.value = obj.getJSONObject("city").getString("name")
         },

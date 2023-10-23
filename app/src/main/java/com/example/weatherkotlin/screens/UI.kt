@@ -13,13 +13,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.example.weatherkotlin.data.Weather
+import java.time.format.DateTimeFormatter
 
-@Preview(showBackground = true)
+//@Preview(showBackground = true)
 @Composable
-fun ListItem() {
+fun ListItem(item: Weather) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -37,12 +39,19 @@ fun ListItem() {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text(text = "12:00")
-                Text(text = "Пасмурно", color = Color.White)
+                Text(
+                    text = item.dataTime.format(
+                        DateTimeFormatter.ofPattern("HH:mm")
+                    )
+                )
+                Text(text = item.description, color = Color.White)
             }
-            Text(text = "10℃", color = Color.White)
+            Column {
+                Text(text = "${item.currentTemp}℃", color = Color.White, fontSize = 20.sp)
+                Text(text = "${item.maxTemp}/${item.minTemp}", color = Color.White)
+            }
             AsyncImage(
-                model = "https:/api.openweathermap.org/img/w/04n",
+                model = "https:/api.openweathermap.org/img/w/${item.icon}",
                 contentDescription = "04n",
                 modifier = Modifier.size(50.dp)
             )
