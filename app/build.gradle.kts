@@ -61,7 +61,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
     implementation("com.android.volley:volley:1.2.1")
     implementation("io.coil-kt:coil-compose:2.4.0")
-
+//    implementation("com.google.accompanist:accompanist-pager:0.33.2-alpha")
+//    implementation("com.google.accompanist:accompanist-pager-indicators:0.33.2-alpha")
 
     implementation(platform("androidx.compose:compose-bom:2023.03.00"))
     implementation("androidx.compose.ui:ui")

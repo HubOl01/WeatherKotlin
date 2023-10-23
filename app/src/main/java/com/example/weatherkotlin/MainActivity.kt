@@ -26,6 +26,7 @@ import androidx.privacysandbox.tools.core.model.Method
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.example.weatherkotlin.screens.MainPage
+import com.example.weatherkotlin.screens.TabLayout
 import com.example.weatherkotlin.ui.theme.WeatherKotlinTheme
 import kotlinx.serialization.json.Json
 import org.json.JSONObject
@@ -40,8 +41,10 @@ class MainActivity : ComponentActivity() {
 //                    modifier = Modifier.fillMaxSize(),
                     color = Color.Blue.copy(alpha = 0.5f)
                 ) {
-                    MainPage()
-//                    Greeting("Ivanovo", this)
+                    Column {
+                        MainPage()
+                        TabLayout()
+                    }
                 }
             }
         }
@@ -100,8 +103,8 @@ private fun getWeather(lat: Double, lon: Double, state: MutableState<String>, co
     val stringRequest = StringRequest(com.android.volley.Request.Method.GET, url,
         { response ->
             val obj = Json.decodeFromString<WeatherModel>(response)
-                nameCity = obj.city.name.toString()
-                state.value = obj.list.first().weather.first().description
+            nameCity = obj.city.name.toString()
+            state.value = obj.list.first().weather.first().description
 //            val obj = JSONObject(response)
 //            state.value = obj.getJSONObject("city").getString("name")
         },
