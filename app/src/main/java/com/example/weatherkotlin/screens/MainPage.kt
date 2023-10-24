@@ -23,6 +23,7 @@ import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,21 +31,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.weatherkotlin.R
 import com.example.weatherkotlin.data.Weather
 import kotlinx.coroutines.launch
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 
 //@Preview(showBackground = true)
 @Composable
-fun MainPage(city: String) {
+fun MainPage(weather: Weather) {
     Column(
         Modifier
 //            .fillMaxSize()
@@ -63,17 +61,17 @@ fun MainPage(city: String) {
 
                 ) {
                 Text(
-                    text = "19.08.2003 10:00", modifier = Modifier
+                    text = weather.dataTime.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")), modifier = Modifier
                         .padding(16.dp), fontSize = 14.sp, color = Color.White
                 )
                 AsyncImage(
-                    model = "https:/api.openweathermap.org/img/w/04n",
+                    model = "https:/api.openweathermap.org/img/w/${weather.icon}",
                     contentDescription = "04n",
                     modifier = Modifier.size(50.dp)
                 )
             }
             Text(
-                text = "${city}",
+                text = weather.city,
                 modifier = Modifier
                     .padding(top = 16.dp, bottom = 8.dp)
                     .fillMaxWidth(),
@@ -82,7 +80,7 @@ fun MainPage(city: String) {
                 color = Color.White
             )
             Text(
-                text = "20℃",
+                text = "${weather.currentTemp}℃",
                 modifier = Modifier
                     .padding(bottom = 8.dp)
                     .fillMaxWidth(),
@@ -91,7 +89,7 @@ fun MainPage(city: String) {
                 fontWeight = FontWeight.Bold, color = Color.White
             )
             Text(
-                text = "Пасмурно",
+                text = weather.description,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth(), color = Color.White
             )
@@ -122,10 +120,10 @@ fun MainPage(city: String) {
 }
 
 
-@Preview(showBackground = true)
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun TabLayout() {
+fun TabLayout(hoursList: MutableState<List<Weather>>) {
     val tabList = listOf<String>("HOURS", "DAYS")
     val pagerState = rememberPagerState()
     val tabIndex = pagerState.currentPage
@@ -167,45 +165,45 @@ fun TabLayout() {
         ) { index ->
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 itemsIndexed(
-                    listOf(
-                        Weather(
-                            LocalDateTime.ofEpochSecond(1698516000, 0, ZoneOffset.UTC),
-                            1.04,
-                            1.04,
-                            1.04,
-                            "Иваново",
-                            "небольшой дождь",
-                            "10n"
-                        ),
-                        Weather(
-                            LocalDateTime.ofEpochSecond(1698516000, 0, ZoneOffset.UTC),
-                            1.04,
-                            1.04,
-                            1.04,
-                            "Иваново",
-                            "небольшой дождь",
-                            "10n"
-                        ),
-                        Weather(
-                            LocalDateTime.ofEpochSecond(1698516000, 0, ZoneOffset.UTC),
-                            1.04,
-                            1.04,
-                            1.04,
-                            "Иваново",
-                            "небольшой дождь",
-                            "10n"
-                        ),
-                        Weather(
-                            LocalDateTime.ofEpochSecond(1698516000, 0, ZoneOffset.UTC),
-                            1.04,
-                            1.04,
-                            1.04,
-                            "Иваново",
-                            "небольшой дождь",
-                            "10n"
-                        ),
-
-                        )
+//                    listOf(
+//                        Weather(
+//                            LocalDateTime.ofEpochSecond(1698516000, 0, ZoneOffset.UTC),
+//                            1.04,
+//                            1.04,
+//                            1.04,
+//                            "Иваново",
+//                            "небольшой дождь",
+//                            "10n"
+//                        ),
+//                        Weather(
+//                            LocalDateTime.ofEpochSecond(1698516000, 0, ZoneOffset.UTC),
+//                            1.04,
+//                            1.04,
+//                            1.04,
+//                            "Иваново",
+//                            "небольшой дождь",
+//                            "10n"
+//                        ),
+//                        Weather(
+//                            LocalDateTime.ofEpochSecond(1698516000, 0, ZoneOffset.UTC),
+//                            1.04,
+//                            1.04,
+//                            1.04,
+//                            "Иваново",
+//                            "небольшой дождь",
+//                            "10n"
+//                        ),
+//                        Weather(
+//                            LocalDateTime.ofEpochSecond(1698516000, 0, ZoneOffset.UTC),
+//                            1.04,
+//                            1.04,
+//                            1.04,
+//                            "Иваново",
+//                            "небольшой дождь",
+//                            "10n"
+//                        ),
+//                        )
+                        hoursList.value
                 ) { index, item ->
                     ListItem(item)
                 }
