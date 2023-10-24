@@ -37,10 +37,6 @@ import coil.compose.AsyncImage
 import com.example.weatherkotlin.R
 import com.example.weatherkotlin.data.Weather
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Instant
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
-
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -48,7 +44,7 @@ import java.time.ZoneOffset
 
 //@Preview(showBackground = true)
 @Composable
-fun MainPage() {
+fun MainPage(city: String) {
     Column(
         Modifier
 //            .fillMaxSize()
@@ -65,7 +61,7 @@ fun MainPage() {
                 Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
 
-            ) {
+                ) {
                 Text(
                     text = "19.08.2003 10:00", modifier = Modifier
                         .padding(16.dp), fontSize = 14.sp, color = Color.White
@@ -77,7 +73,7 @@ fun MainPage() {
                 )
             }
             Text(
-                text = "City",
+                text = "${city}",
                 modifier = Modifier
                     .padding(top = 16.dp, bottom = 8.dp)
                     .fillMaxWidth(),
@@ -170,48 +166,49 @@ fun TabLayout() {
             modifier = Modifier.weight(1.0f)
         ) { index ->
             LazyColumn(modifier = Modifier.fillMaxSize()) {
-               itemsIndexed(
-                   listOf(
-                       Weather(
-                           LocalDateTime.ofEpochSecond(1698516000, 0, ZoneOffset.UTC),
-                           1.04,
-                           1.04,
-                           1.04,
-                           "Иваново",
-                           "небольшой дождь",
-                           "10n"
-                           ),
-                       Weather(
-                           LocalDateTime.ofEpochSecond(1698516000, 0, ZoneOffset.UTC),
-                           1.04,
-                           1.04,
-                           1.04,
-                           "Иваново",
-                           "небольшой дождь",
-                           "10n"
-                       ),
-                       Weather(
-                           LocalDateTime.ofEpochSecond(1698516000, 0, ZoneOffset.UTC),
-                           1.04,
-                           1.04,
-                           1.04,
-                           "Иваново",
-                           "небольшой дождь",
-                           "10n"
-                       ),
-                       Weather(
-                           LocalDateTime.ofEpochSecond(1698516000, 0, ZoneOffset.UTC),
-                           1.04,
-                           1.04,
-                           1.04,
-                           "Иваново",
-                           "небольшой дождь",
-                           "10n"
-                       ),
+                itemsIndexed(
+                    listOf(
+                        Weather(
+                            LocalDateTime.ofEpochSecond(1698516000, 0, ZoneOffset.UTC),
+                            1.04,
+                            1.04,
+                            1.04,
+                            "Иваново",
+                            "небольшой дождь",
+                            "10n"
+                        ),
+                        Weather(
+                            LocalDateTime.ofEpochSecond(1698516000, 0, ZoneOffset.UTC),
+                            1.04,
+                            1.04,
+                            1.04,
+                            "Иваново",
+                            "небольшой дождь",
+                            "10n"
+                        ),
+                        Weather(
+                            LocalDateTime.ofEpochSecond(1698516000, 0, ZoneOffset.UTC),
+                            1.04,
+                            1.04,
+                            1.04,
+                            "Иваново",
+                            "небольшой дождь",
+                            "10n"
+                        ),
+                        Weather(
+                            LocalDateTime.ofEpochSecond(1698516000, 0, ZoneOffset.UTC),
+                            1.04,
+                            1.04,
+                            1.04,
+                            "Иваново",
+                            "небольшой дождь",
+                            "10n"
+                        ),
 
-                   )){
-                       index, item -> ListItem(item)
-                   }
+                        )
+                ) { index, item ->
+                    ListItem(item)
+                }
             }
         }
     }

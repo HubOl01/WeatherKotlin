@@ -37,12 +37,15 @@ class MainActivity : ComponentActivity() {
         setContent {
             WeatherKotlinTheme {
                 // A surface container using the 'background' color from the theme
+                val lat: Double = 56.99719;
+                val lon: Double = 40.97139;
+                getWeather(lat, lon, this)
                 Surface(
 //                    modifier = Modifier.fillMaxSize(),
                     color = Color.Blue.copy(alpha = 0.5f)
                 ) {
                     Column {
-                        MainPage()
+                        MainPage(nameCity.value)
                         TabLayout()
                     }
                 }
@@ -77,7 +80,7 @@ fun Greeting(name: String, context: Context) {
         ) {
 
             Button(onClick = {
-                getWeather(lat, lon, state, context)
+//                getWeather(lat, lon, state, context)
             }) {
                 Text(text = "Нажми сюда")
             }
@@ -92,16 +95,20 @@ fun Greeting(name: String, context: Context) {
 //        Greeting("Android")
 //    }
 //}
-var nameCity: String = "null";
-private fun getWeather(lat: Double, lon: Double, state: MutableState<String>, context: Context) {
+var nameCity = mutableStateOf("null")
+
+private fun getWeather(lat: Double, lon: Double, /*state: MutableState<String>,*/ context: Context) {
     val url = "https://api.openweathermap.org/data/2.5/forecast?" +
             "lat=${lat}&" +
             "lon=${lon}&" +
             "lang=ru&" +
             "appid=e847b8dad5ccbf86bebe66ecdb5fdf24"
+    nameCity.value = "test"
     val queue = Volley.newRequestQueue(context)
     val stringRequest = StringRequest(com.android.volley.Request.Method.GET, url,
         { response ->
+            val obj = JSONObject(response)
+            nameCity.value = obj.getJSONObject("city").getString("name")
 //            val obj = Json.decodeFromString<WeatherModel>(response)
 //            nameCity = obj.city.name.toString()
 //            state.value = obj.list.first().weather.first().description
