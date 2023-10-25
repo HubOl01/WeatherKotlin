@@ -1,5 +1,6 @@
 package com.example.weatherkotlin.screens
 
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -37,12 +38,14 @@ import coil.compose.AsyncImage
 import com.example.weatherkotlin.R
 import com.example.weatherkotlin.data.Weather
 import kotlinx.coroutines.launch
+import org.json.JSONObject
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 
 //@Preview(showBackground = true)
 @Composable
-fun MainPage(weather: Weather) {
+fun MainPage(weather: MutableState<Weather>) {
     Column(
         Modifier
 //            .fillMaxSize()
@@ -61,17 +64,17 @@ fun MainPage(weather: Weather) {
 
                 ) {
                 Text(
-                    text = weather.dataTime.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")), modifier = Modifier
+                    text = weather.value.dataTime.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")), modifier = Modifier
                         .padding(16.dp), fontSize = 14.sp, color = Color.White
                 )
                 AsyncImage(
-                    model = "https:/api.openweathermap.org/img/w/${weather.icon}",
+                    model = "https:/api.openweathermap.org/img/w/${weather.value.icon}",
                     contentDescription = "04n",
                     modifier = Modifier.size(50.dp)
                 )
             }
             Text(
-                text = weather.city,
+                text = weather.value.city,
                 modifier = Modifier
                     .padding(top = 16.dp, bottom = 8.dp)
                     .fillMaxWidth(),
@@ -80,7 +83,7 @@ fun MainPage(weather: Weather) {
                 color = Color.White
             )
             Text(
-                text = "${weather.currentTemp}℃",
+                text = "${weather.value.currentTemp.toInt()}℃",
                 modifier = Modifier
                     .padding(bottom = 8.dp)
                     .fillMaxWidth(),
@@ -89,7 +92,12 @@ fun MainPage(weather: Weather) {
                 fontWeight = FontWeight.Bold, color = Color.White
             )
             Text(
-                text = weather.description,
+                text = weather.value.description,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(), color = Color.White
+            )
+            Text(
+                text = "${weather.value.minTemp.toInt()}℃/${weather.value.maxTemp.toInt()}℃",
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth(), color = Color.White
             )
@@ -123,7 +131,7 @@ fun MainPage(weather: Weather) {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun TabLayout(hoursList: MutableState<List<Weather>>) {
+fun TabLayout(hoursList: MutableState<List<Weather>>, daysList: MutableState<List<Weather>>) {
     val tabList = listOf<String>("HOURS", "DAYS")
     val pagerState = rememberPagerState()
     val tabIndex = pagerState.currentPage
@@ -163,51 +171,13 @@ fun TabLayout(hoursList: MutableState<List<Weather>>) {
             state = pagerState,
             modifier = Modifier.weight(1.0f)
         ) { index ->
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
-                itemsIndexed(
-//                    listOf(
-//                        Weather(
-//                            LocalDateTime.ofEpochSecond(1698516000, 0, ZoneOffset.UTC),
-//                            1.04,
-//                            1.04,
-//                            1.04,
-//                            "Иваново",
-//                            "небольшой дождь",
-//                            "10n"
-//                        ),
-//                        Weather(
-//                            LocalDateTime.ofEpochSecond(1698516000, 0, ZoneOffset.UTC),
-//                            1.04,
-//                            1.04,
-//                            1.04,
-//                            "Иваново",
-//                            "небольшой дождь",
-//                            "10n"
-//                        ),
-//                        Weather(
-//                            LocalDateTime.ofEpochSecond(1698516000, 0, ZoneOffset.UTC),
-//                            1.04,
-//                            1.04,
-//                            1.04,
-//                            "Иваново",
-//                            "небольшой дождь",
-//                            "10n"
-//                        ),
-//                        Weather(
-//                            LocalDateTime.ofEpochSecond(1698516000, 0, ZoneOffset.UTC),
-//                            1.04,
-//                            1.04,
-//                            1.04,
-//                            "Иваново",
-//                            "небольшой дождь",
-//                            "10n"
-//                        ),
-//                        )
-                        hoursList.value
-                ) { index, item ->
-                    ListItem(item)
-                }
+            val list = when(index){
+                0 -> hoursList.value
+                1 -> daysList.value
+                else -> hoursList.value
             }
+            MainList(list)
         }
     }
 }
+

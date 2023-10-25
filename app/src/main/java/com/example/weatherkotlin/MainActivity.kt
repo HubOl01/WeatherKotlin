@@ -22,14 +22,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
+import com.example.weatherkotlin.data.DayHeading
 import com.example.weatherkotlin.data.Weather
 import com.example.weatherkotlin.screens.MainPage
 import com.example.weatherkotlin.screens.TabLayout
 import com.example.weatherkotlin.ui.theme.WeatherKotlinTheme
 import org.json.JSONArray
 import org.json.JSONObject
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,24 +45,30 @@ class MainActivity : ComponentActivity() {
                 val hoursList = remember {
                     mutableStateOf(listOf<Weather>())
                 }
-                getGeoCoder("Ivanovo", this, hoursList)
+                val daysList = remember {
+                    mutableStateOf(listOf<Weather>())
+                }
+                val currentWeather = remember {
+                    mutableStateOf(Weather(
+                        LocalDateTime.of(
+                            1900,
+                            1,
+                            1,
+                            0,
+                            0
+                        ), 0.0, 0.0, 0.0, "", "", ""
+                    ))
+                }
+                getGeoCoder("Ivanovo", this, hoursList, daysList, currentWeather)
                 Surface(
 //                    modifier = Modifier.fillMaxSize(),
                     color = Color.Blue.copy(alpha = 0.5f)
                 ) {
                     Column {
                         MainPage(
-                            hoursList.value.firstOrNull() ?: Weather(
-                                LocalDateTime.of(
-                                    1900,
-                                    1,
-                                    1,
-                                    0,
-                                    0
-                                ), 0.0, 0.0, 0.0, "", "", ""
-                            )
+                            currentWeather
                         )
-                        TabLayout(hoursList)
+                        TabLayout(hoursList, daysList)
                     }
                 }
             }
@@ -111,7 +120,7 @@ fun Greeting(name: String, context: Context) {
 var nameCity = mutableStateOf("null")
 
 
-private fun getGeoCoder(city: String, context: Context, hoursList: MutableState<List<Weather>>) {
+private fun getGeoCoder(city: String, context: Context, hoursList: MutableState<List<Weather>>, daysList: MutableState<List<Weather>>, currentWeather: MutableState<Weather>) {
     val url = "https://api.openweathermap.org/geo/1.0/direct?" +
             "q=${city}&" +
             "limit=1&" +
@@ -122,7 +131,7 @@ private fun getGeoCoder(city: String, context: Context, hoursList: MutableState<
         val jsonObject = obj.getJSONObject(0)
         val lat = jsonObject.getDouble("lat")
         val lon = jsonObject.getDouble("lon")
-        getWeather(lat, lon, context, hoursList)
+        getWeather(lat, lon, context, hoursList, daysList, currentWeather)
         Log.d("MyLog", "response: ${response.toString()}")
         Log.d("MyTest", "lat: ${lat.toString()} lon: ${lon.toString()}")
     }, { error ->
@@ -134,7 +143,9 @@ private fun getGeoCoder(city: String, context: Context, hoursList: MutableState<
 private fun getWeather(
     lat: Double,
     lon: Double, /*state: MutableState<String>,*/
-    context: Context, hoursList: MutableState<List<Weather>>
+    context: Context, hoursList: MutableState<List<Weather>>,
+    daysList: MutableState<List<Weather>>,
+    currentWeather: MutableState<Weather>
 ) {
     val url = "https://api.openweathermap.org/data/2.5/forecast?" +
             "lat=${lat}&" +
@@ -148,7 +159,10 @@ private fun getWeather(
         { response ->
 
             val list = getWeatherByHour(response)
+            val days = getWeatherByDay(response)
+            currentWeather.value = list.first()
             hoursList.value = list
+            daysList.value = days
 //            nameCity.value = obj.getJSONObject("city").getString("name")
 //            val obj = Json.decodeFromString<WeatherModel>(response)
 //            nameCity = obj.city.name.toString()
@@ -186,36 +200,53 @@ private fun getWeatherByHour(response: String): List<Weather> {
             )
         )
     }
-    list[0] = list[0].copy(
-
-
-    )
     return list
 }
-//fun initWeatherWithData() {
-//    val now = java.time.LocalDateTime.now()
-//    var itCurrentDay = now
-//    var itNextDay = DateTime(now.year, now.month, now.day + 1, 0, 0, 0, 0, 0)
-//
-//    itemsToBuild.add(DayHeading(dateTime = now))
-//    for (i in 0 until weatherForecast.size) {
-//        val currentDateTime = weatherForecast[i].getDateTime()
-//        if (currentDateTime == itNextDay) {
-//            itCurrentDay = itNextDay
-//            itNextDay = DateTime(
-//                itNextDay.year, itNextDay.month, itNextDay.day + 1, 0, 0, 0, 0, 0
-//            )
-//            itemsToBuild.add(DayHeading(dateTime = itCurrentDay))
-//            itemsToBuild.add(weatherForecast[i])
-//        } else if (currentDateTime.isAfter(itNextDay)) {
-//            itCurrentDay = itNextDay
-//            itNextDay = DateTime(
-//                itNextDay.year, itNextDay.month, itNextDay.day + 1, 0, 0, 0, 0, 0
-//            )
-//            itemsToBuild.add(DayHeading(dateTime = itCurrentDay))
-//        } else {
-//            itemsToBuild.add(weatherForecast[i])
-//        }
-//    }
-//    _isLoading = false
-//}
+
+private fun getWeatherByDay(response: String) : List<Weather>{
+    if(response.isEmpty()) return listOf()
+    val list = ArrayList<Weather>()
+    val mainObject = JSONObject(response)
+    val city = mainObject.getJSONObject("city").getString("name")
+    val hours = mainObject.getJSONArray("list")
+    for (i in 0 until hours.length()) {
+        val item = hours[i] as JSONObject
+        list.add(
+            Weather(
+                java.time.LocalDateTime.ofEpochSecond(
+                    item.getLong("dt"),
+                    0,
+                    ZoneOffset.UTC
+                ),
+                item.getJSONObject("main").getDouble("temp"),
+                item.getJSONObject("main").getDouble("temp_max"),
+                item.getJSONObject("main").getDouble("temp_min"),
+                city,
+                item.getJSONArray("weather").getJSONObject(0).getString("description"),
+                item.getJSONArray("weather").getJSONObject(0).getString("icon"),
+            )
+        )
+    }
+//    val groupedWeather = groupWeatherByDay(list) // Группировка по дате
+    var currentDate = ""
+    val listByDay = ArrayList<Weather>()
+    for (forecast in list) {
+        val date = forecast.dataTime.toString().substring(0, 10)
+        if (date != currentDate) {
+            Log.d("forecast", "Дата: $date: Температура: ${forecast.currentTemp}")
+            currentDate = date
+            listByDay.add(
+                Weather(
+                    LocalDate.parse(date, DateTimeFormatter.ofPattern("yyyy-MM-dd")).atStartOfDay(),
+                    forecast.currentTemp,
+                    forecast.maxTemp,
+                    forecast.minTemp,
+                    forecast.city,
+                    forecast.description,
+                    forecast.icon
+                )
+            )
+        }
+    }
+    return listByDay
+}

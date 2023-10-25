@@ -11,3 +11,5 @@ data class Weather(
     val description: String,
     val icon: String,
 )
+
+data class DayHeading(val dateTime: LocalDateTime)
