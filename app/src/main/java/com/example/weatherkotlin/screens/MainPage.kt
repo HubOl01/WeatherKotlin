@@ -45,7 +45,7 @@ import java.time.format.DateTimeFormatter
 
 //@Preview(showBackground = true)
 @Composable
-fun MainPage(weather: MutableState<Weather>) {
+fun MainPage(weather: MutableState<Weather>, onSearchClick: () -> Unit, onAsyncClick: () -> Unit) {
     Column(
         Modifier
 //            .fillMaxSize()
@@ -105,7 +105,9 @@ fun MainPage(weather: MutableState<Weather>) {
                 Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                IconButton(onClick = { /*TODO*/ }) {
+                IconButton(onClick = {
+                    onSearchClick.invoke()
+                }) {
                     Icon(
                         painter = painterResource(id = R.drawable.baseline_search_24),
                         contentDescription = "in3",
@@ -113,7 +115,9 @@ fun MainPage(weather: MutableState<Weather>) {
                     )
 
                 }
-                IconButton(onClick = { /*TODO*/ }) {
+                IconButton(onClick = {
+                    onAsyncClick.invoke()
+                }) {
                     Icon(
                         painter = painterResource(id = R.drawable.cloud_sync_24),
                         contentDescription = "in3",

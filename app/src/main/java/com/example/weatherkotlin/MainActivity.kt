@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.example.weatherkotlin
 
 import android.content.Context
@@ -10,9 +12,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -39,34 +45,63 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             WeatherKotlinTheme {
-                // A surface container using the 'background' color from the theme
-                val lat: Double = 56.99719;
-                val lon: Double = 40.97139;
                 val hoursList = remember {
                     mutableStateOf(listOf<Weather>())
                 }
                 val daysList = remember {
                     mutableStateOf(listOf<Weather>())
                 }
-                val currentWeather = remember {
-                    mutableStateOf(Weather(
-                        LocalDateTime.of(
-                            1900,
-                            1,
-                            1,
-                            0,
-                            0
-                        ), 0.0, 0.0, 0.0, "", "", ""
-                    ))
+
+                val dialogState = remember {
+                    mutableStateOf(false)
                 }
-                getGeoCoder("Ivanovo", this, hoursList, daysList, currentWeather)
+                val cityDefault = remember { mutableStateOf("London") }
+
+                val currentWeather = remember {
+                    mutableStateOf(
+                        Weather(
+                            LocalDateTime.of(
+                                1900,
+                                1,
+                                1,
+                                0,
+                                0
+                            ), 0.0, 0.0, 0.0, "", "", ""
+                        )
+                    )
+                }
+                if (dialogState.value) {
+                    DialogSearch(dialogState, onSubmitClick = {
+                            cityDefault.value = it
+                        getGeoCoder(
+                            it,
+                            this@MainActivity,
+                            hoursList,
+                            daysList,
+                            currentWeather
+                        )
+                    })
+                }
+                getGeoCoder(cityDefault.value, this, hoursList, daysList, currentWeather)
                 Surface(
 //                    modifier = Modifier.fillMaxSize(),
                     color = Color.Blue.copy(alpha = 0.5f)
                 ) {
                     Column {
                         MainPage(
-                            currentWeather
+                            currentWeather,
+                            onSearchClick = {
+                                dialogState.value = true
+                            },
+                            onAsyncClick = {
+                                getGeoCoder(
+                                    cityDefault.value,
+                                    this@MainActivity,
+                                    hoursList,
+                                    daysList,
+                                    currentWeather
+                                )
+                            }
                         )
                         TabLayout(hoursList, daysList)
                     }
@@ -76,39 +111,75 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+
 @Composable
-fun Greeting(name: String, context: Context) {
-    val lat: Double = 56.99719;
-    val lon: Double = 40.97139;
-    val state = remember {
-        mutableStateOf("null")
+fun DialogSearch(dialogState: MutableState<Boolean>, onSubmitClick: (String) -> Unit) {
+    val dialodText = remember {
+        mutableStateOf("")
     }
-    Column(modifier = Modifier.fillMaxSize()) {
-        Box(
-            modifier = Modifier
-                .fillMaxHeight(0.5f)
-                .fillMaxWidth(), contentAlignment = Alignment.Center
-        ) {
-
-            Text(
-                text = "Current $nameCity = ${state.value}",
-            )
+    AlertDialog(onDismissRequest = {
+        dialogState.value = false
+    }, confirmButton = {
+        TextButton(onClick = {
+            onSubmitClick(dialodText.value)
+            dialogState.value = false
+        }) {
+            Text("OK")
         }
-        Box(
-            modifier = Modifier
-                .fillMaxHeight(0.5f)
-                .fillMaxWidth(),
-            contentAlignment = Alignment.Center
-        ) {
-
-            Button(onClick = {
-//                getWeather(lat, lon, state, context)
-            }) {
-                Text(text = "Нажми сюда")
+    }, dismissButton = {
+        TextButton(onClick = {
+            dialogState.value = false
+        }) {
+            Text("Cancel")
+        }
+    },
+        title = {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text("Введите название города:")
+                TextField(
+                    value = dialodText.value,
+                    onValueChange = {
+                        dialodText.value = it
+                    },
+                )
             }
         }
-    }
+    )
 }
+
+//@Composable
+//fun Greeting(name: String, context: Context) {
+//    val lat: Double = 56.99719;
+//    val lon: Double = 40.97139;
+//    val state = remember {
+//        mutableStateOf("null")
+//    }
+//    Column(modifier = Modifier.fillMaxSize()) {
+//        Box(
+//            modifier = Modifier
+//                .fillMaxHeight(0.5f)
+//                .fillMaxWidth(), contentAlignment = Alignment.Center
+//        ) {
+//
+//            Text(
+//                text = "Current $nameCity = ${state.value}",
+//            )
+//        }
+//        Box(
+//            modifier = Modifier
+//                .fillMaxHeight(0.5f)
+//                .fillMaxWidth(),
+//            contentAlignment = Alignment.Center
+//        ) {
+//
+//            Button(onClick = {
+////                getWeather(lat, lon, state, context)
+//            }) {
+//                Text(text = "Нажми сюда")
+//            }
+//        }
+//    }
+//}
 
 //@Preview(showBackground = true)
 //@Composable
@@ -117,10 +188,16 @@ fun Greeting(name: String, context: Context) {
 //        Greeting("Android")
 //    }
 //}
-var nameCity = mutableStateOf("null")
+//var nameCity = mutableStateOf("null")
 
 
-private fun getGeoCoder(city: String, context: Context, hoursList: MutableState<List<Weather>>, daysList: MutableState<List<Weather>>, currentWeather: MutableState<Weather>) {
+private fun getGeoCoder(
+    city: String,
+    context: Context,
+    hoursList: MutableState<List<Weather>>,
+    daysList: MutableState<List<Weather>>,
+    currentWeather: MutableState<Weather>
+) {
     val url = "https://api.openweathermap.org/geo/1.0/direct?" +
             "q=${city}&" +
             "limit=1&" +
@@ -153,7 +230,7 @@ private fun getWeather(
             "lang=ru&" +
             "units=metric&" +
             "appid=e847b8dad5ccbf86bebe66ecdb5fdf24"
-    nameCity.value = "test"
+//    nameCity.value = "test"
     val queue = Volley.newRequestQueue(context)
     val stringRequest = StringRequest(com.android.volley.Request.Method.GET, url,
         { response ->
@@ -203,8 +280,8 @@ private fun getWeatherByHour(response: String): List<Weather> {
     return list
 }
 
-private fun getWeatherByDay(response: String) : List<Weather>{
-    if(response.isEmpty()) return listOf()
+private fun getWeatherByDay(response: String): List<Weather> {
+    if (response.isEmpty()) return listOf()
     val list = ArrayList<Weather>()
     val mainObject = JSONObject(response)
     val city = mainObject.getJSONObject("city").getString("name")
@@ -233,7 +310,7 @@ private fun getWeatherByDay(response: String) : List<Weather>{
     for (forecast in list) {
         val date = forecast.dataTime.toString().substring(0, 10)
         if (date != currentDate) {
-            Log.d("forecast", "Дата: $date: Температура: ${forecast.currentTemp}")
+//            Log.d("forecast", "Дата: $date: Температура: ${forecast.currentTemp}")
             currentDate = date
             listByDay.add(
                 Weather(
